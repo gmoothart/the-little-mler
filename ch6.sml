@@ -95,7 +95,7 @@ fun occurs_in_slist(a:Fruit, Empty: Fruit Slist):int
   | occurs_in_slist(a:Fruit, Scons(x, y): Fruit Slist):int
     = occurs_in_sexp(a, x) + occurs_in_slist(a, y)
 
- and 
+ and
 
     occurs_in_sexp(a:Fruit, An_atom(x): Fruit Sexp):int
     = if eq_fruit(a, x)
@@ -119,16 +119,16 @@ and
   | subst_in_sexp(new:Fruit, old:Fruit, A_slist(x): Fruit Sexp):Fruit Sexp
       = A_slist( subst_in_slist(new, old, x) );
 
+fun eq_fruit_in_atom(f:Fruit, An_atom(x): Fruit Sexp): bool
+    = eq_fruit(f, x)
+  | eq_fruit_in_atom(f:Fruit, A_slist(x): Fruit Sexp): bool
+    = false
 
 fun rem_from_slist(f:Fruit, Empty: Fruit Slist):Fruit Slist
     = Empty
-  | rem_from_slist(f:Fruit, Scons(x, y): Fruit Slist):Fruit Slist
-    = Scons(rem_from_sexp(f, x), rem_from_slist(f, y))
-
-and
-    rem_from_sexp(f:Fruit, An_atom(x): Fruit Sexp):Fruit Sexp
-      = if (eq_fruit(f, x))
-        then An_atom(new)
-        else An_atom(x)
-  | rem_from_sexp(new:Fruit, A_slist(x): Fruit Sexp):Fruit Sexp
-      = A_slist( rem_from_slist(new, old, x) );
+  | rem_from_slist(f:Fruit, Scons(An_atom(b), y): Fruit Slist):Fruit Slist
+    = if eq_fruit(f, b)
+      then rem_from_slist(f, y)
+      else Scons(An_atom(b), rem_from_slist(f, y)) 
+   | rem_from_slist(f:Fruit, Scons(A_slist(b), y))
+     = Scons(A_slist(rem_from_slist(f, b)), rem_from_slist(f, y))
