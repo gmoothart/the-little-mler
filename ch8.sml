@@ -30,7 +30,12 @@ fun subst(rel, n, a, Empty)
      then Cons(n, subst_oraple(n, a, t))
      else Cons(e, subst_oraple(n, a, t));
 
-fun in_range((a, b), n)
-  = if (a < n) andalso (n < b)
-    then true
-    else false;
+fun in_range_c(small, large)(n)
+  = (small < n) andalso (n < large);
+
+fun subst_pred(pred, n, Empty)
+    = Empty
+  | subst_pred(pred, n, Cons(e, t))
+    = if pred(e)
+     then Cons(n, subst_pred(pred, n, t))
+     else Cons(e, subst_pred(pred, n, t));
