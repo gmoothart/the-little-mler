@@ -39,3 +39,10 @@ fun subst_pred(pred, n, Empty)
     = if pred(e)
      then Cons(n, subst_pred(pred, n, t))
      else Cons(e, subst_pred(pred, n, t));
+
+fun subst_c(pred)(n, Empty)
+    = Empty
+  | subst_c(pred)(n, Cons(e, t))
+    = if pred(e)
+     then Cons(n, subst_c(pred)(n, t))
+     else Cons(e, subst_c(pred)(n, t));
