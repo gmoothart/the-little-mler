@@ -1,6 +1,6 @@
 Control.Print.printDepth := 20;
 
-datatype oraple = 
+datatype oraple =
     Orange
   | Apple;
 
@@ -46,3 +46,28 @@ fun subst_c(pred)(n, Empty)
     = if pred(e)
      then Cons(n, subst_c(pred)(n, t))
      else Cons(e, subst_c(pred)(n, t));
+
+
+(* function must take two lists and return one list of the elements combined *)
+fun combine(Empty, l2)
+    = l2
+  | combine(Cons(a, l1), l2)
+    = Cons(a, combine(l1,l2));
+
+fun combine_c(Empty)(l2)
+    = l2
+  | combine_c(Cons(a, l1))(l2)
+    = Cons(a, combine_c(l1)(l2));
+
+fun base(l2)
+    = l2;
+
+
+fun combine_s(Empty)
+    = base
+  | combine_s(Cons(a, l1))
+    = make_cons(a, combine_s(l1))
+and
+  make_cons(a, f)(l2)
+    = Cons(a, f(l2));
+
