@@ -41,6 +41,24 @@ fun list_item(n, Empty)
       then a
       else list_item(n-1, l);
 
+fun find(n, boxes)
+    = (check(n, boxes, list_item(n, boxes))
+       handle Out_of_range
+       => find(n div 2, boxes))
+and check(n, boxes, Bacon)
+    = n
+  | check(n, boxes, Ix(i))
+    = find(i, boxes);
+
+fun path(n, boxes)
+    = Cons(n, (check(boxes, list_item(n, boxes))
+       handle Out_of_range
+       => path(n div 2, boxes)))
+and check(boxes, Bacon)
+    = Empty
+  | check(boxes, Ix(i))
+    = path(i, boxes);
+
 (*
 fun find(n, Empty)
     = raise No_bacon(0)
