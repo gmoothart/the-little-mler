@@ -37,8 +37,6 @@ fun plus(n, m)
   = if is_zero(n)
     then m
     else succ(plus(pred(n), m));
-*)
-
 
 signature N =
   sig
@@ -48,10 +46,22 @@ signature N =
     val pred : number -> number
     val is_zero : number -> bool
   end;
+*)
+
+signature N_C_R =
+  sig
+    type number
+    exception Too_small
+    val conceal : int -> number
+    val succ : number -> number
+    val pred : number -> number
+    val is_zero : number -> bool
+    val reveal : number -> int
+  end;
 
 functor NumberAsNum()
   :>
-  N
+  N_C_R
   =
   struct
     datatype num =
@@ -59,6 +69,10 @@ functor NumberAsNum()
       | One_more_than of num;
     type number = num
     exception Too_small
+    fun conceal(0)
+        = Zero
+      | conceal(i)
+        = One_more_than(conceal(i-1))
     fun succ(n)
       = One_more_than(n)
     fun pred(Zero)
@@ -69,15 +83,21 @@ functor NumberAsNum()
         = true
       | is_zero(n)
         = false
+    fun reveal(Zero)
+        = 0
+      | reveal(One_more_than(rest))
+        = 1 + reveal(rest)
   end
 
 functor NumberAsInt()
   :>
-  N
+  N_C_R
   =
   struct
     type number = int
     exception Too_small
+    fun conceal(n)
+      = n
     fun succ(n)
       = n + 1;
     fun pred(n)
@@ -86,6 +106,8 @@ functor NumberAsInt()
         else n - 1;
     fun is_zero(n)
       = n = 0;
+    fun reveal(n)
+      = n
   end
 
 structure IntStruct =
@@ -102,7 +124,7 @@ signature P =
 
 functor PON(a_N : N)
   :>
-  P
+  P where type number = a_N.number
   =
   struct
     type number = a_N.number
@@ -113,4 +135,80 @@ functor PON(a_N : N)
 
   end
 
+structure IntArith = PON(IntStruct);
+structure NumArith = PON(NumStruct);
+
+signature S =
+  sig
+    type number1
+    type number2
+    val similar : (number1 * number2) -> bool
+  end;
+
+functor Same(structure a_N : N
+             structure b_N : N)
+  :>
+  S where type number1 = a_N.number
+    where type number2 = b_N.number
+  =
+  struct
+    type number1 = a_N.number
+    type number2 = b_N.number
+    fun similar(a, b)
+      = if a_N.is_zero(a) andalso b_N.is_zero(b)
+        then true
+        else if a_N.is_zero(a) orelse b_N.is_zero(b)
+        then false
+        else similar(a_N.pred(a), b_N.pred(b))
+  end
+
+structure SimIntNum = Same(structure a_N = IntStruct
+                           structure b_N = NumStruct);
+
+signature J = 
+  sig
+    val new_plus : (int * int) -> int
+  end
+
+functor NP(structure a_N : N_C_R
+           structure a_P : P
+           sharing type
+           a_N.number
+           =
+           a_P.number)
+  :>
+  J
+  =
+  struct
+    fun new_plus(x,y)
+      = a_N.reveal(
+          a_P.plus(
+            a_N.conceal(x), a_N.conceal(y)))
+  end
+
+structure NPStruct = NP(structure a_N = NumStruct
+                        structure a_P = NumArith);
+
+signature T =
+  sig
+    type number
+    val times : (number * number) -> number
+  end
+
+functor TON(structure a_N : N_C_R
+           structure a_P : P
+           sharing type
+           a_N.number
+           =
+           a_P.number)
+  :>
+  T where type number = a_N.number
+  =
+  struct
+    type number = a_N.number
+    fun times(x,y)
+      = if a_N.is_zero(x) 
+        then x
+        else a_P.plus(x, times(x, a_N.pred(y)))
+  end
 
